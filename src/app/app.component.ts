@@ -1,6 +1,7 @@
 import { Component, VERSION } from '@angular/core';
 import { BehaviorSubject, of, Observable, ReplaySubject, Subject } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { switchMap } from 'rxjs/operators';
 
 interface Company {
   id: string;
@@ -14,27 +15,26 @@ interface Company {
 export class AppComponent {
   proposedCompanies$: Observable<[]> = of([]);
   availableCompanies$: Observable<[]> = of([]);
+  refreshBook$ = new BehaviorSubject<boolean>(true);
 
   constructor() {}
 
+  // Starts the chain of getting the books
   selectTeam() {
-    this.getProposedCompanies();
-    this.getAvailableCompanies();
+    this.proposedCompanies$ = this.refreshBook$.pipe(
+      switchMap(() => this.fetchProposedCompanies())
+    );
+    this.availableCompanies$ = this.refreshBook$.pipe(
+      switchMap(() => this.fetchAvailableCompanies())
+    );
   }
 
-  getProposedCompanies() {
-    this.proposedCompanies$ = this.fetchProposedCompanies();
-  }
-
-  getAvailableCompanies() {
-    this.availableCompanies$ = this.fetchAvailableCompanies();
-  }
-
+  // Any action that returns an updated Company
   doAction() {
     this.updateCompany().subscribe((company) => {
       console.log('New updated Company = ', company);
-      this.getProposedCompanies();
-      this.getAvailableCompanies();
+      // the new value doesn't matter - it will just trigger the flow
+      this.refreshBook$.next(true);
     });
   }
 
