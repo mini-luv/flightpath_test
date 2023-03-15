@@ -12,25 +12,30 @@ interface Company {
   templateUrl: './app.component.html',
 })
 export class AppComponent {
-  proposedCompanies$: Observable<Company[]> = of([]);
-  availableCompanies$: Observable<Company[]> = of([]);
-  subject = new BehaviorSubject('0');
-  actionReplaySubject$ = new ReplaySubject();
-  firstSubscriptionString = '';
-  secondSubscriptionString = '';
+  proposedCompanies$: Observable<[]> = of([]);
+  availableCompanies$: Observable<[]> = of([]);
 
-  constructor(public http: HttpClient) {
-    this.subject.subscribe((value) => {
-      console.log(`Subscription init: ${value}`);
-    });
-  }
+  constructor() {}
 
   selectTeam() {
+    this.getProposedCompanies();
+    this.getAvailableCompanies();
+  }
+
+  getProposedCompanies() {
     this.proposedCompanies$ = this.fetchProposedCompanies();
   }
 
+  getAvailableCompanies() {
+    this.availableCompanies$ = this.fetchAvailableCompanies();
+  }
+
   doAction() {
-    this.updateCompany().subscribe(() => this.fetchProposedCompanies());
+    this.updateCompany().subscribe((company) => {
+      console.log('New updated Company = ', company);
+      this.getProposedCompanies();
+      this.getAvailableCompanies();
+    });
   }
 
   updateCompany(): Observable<Company> {
@@ -38,10 +43,20 @@ export class AppComponent {
   }
 
   fetchProposedCompanies(): Observable<any> {
-    return of([
-      { id: '1A', name: 'Shoes' },
-      { id: '1B', name: 'Pants' },
-      { id: '1C', name: 'Hats' },
-    ]);
+    const dcs = [
+      Math.floor(Math.random() * 10),
+      Math.floor(Math.random() * 10),
+      Math.floor(Math.random() * 10),
+    ];
+    return of(dcs);
+  }
+
+  fetchAvailableCompanies(): Observable<any> {
+    const dcs = [
+      Math.floor(Math.random() * 10),
+      Math.floor(Math.random() * 10),
+      Math.floor(Math.random() * 10),
+    ];
+    return of(dcs);
   }
 }
